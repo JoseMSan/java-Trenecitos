@@ -6,7 +6,7 @@ public class Trenes {
     String tipo;
     int tam;
 
-    public Trenes(int tam, int tipo) {
+    public Trenes(int tam, int tipo, int id) {
         this.vagones = new int[tam][2];
         this.tipo = String.valueOf(tipo);
         this.tam = tam;
@@ -24,7 +24,8 @@ public class Trenes {
         return tipo;
     }
 
-    public void setTipo(int tipo) {
+    public void setTipo(String tipo) {
         this.tipo = String.valueOf(tipo);
     }
+
 }
