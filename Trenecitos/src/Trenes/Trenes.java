@@ -5,10 +5,11 @@ public class Trenes {
     int [][] vagones;
     String tipo;
     int tam;
+    int id;
 
-    public Trenes(int tam, int tipo, int id) {
+    public Trenes(int tam, String tipo, int id) {
         this.vagones = new int[tam][2];
-        this.tipo = String.valueOf(tipo);
+        this.tipo = tipo;
         this.tam = tam;
     }
 
@@ -28,4 +29,11 @@ public class Trenes {
         this.tipo = String.valueOf(tipo);
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
