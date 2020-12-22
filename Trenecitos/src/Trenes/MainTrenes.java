@@ -1,100 +1,70 @@
 package Trenes;
 
-import java.sql.SQLOutput;
 import java.util.Scanner;
 
 public class MainTrenes {
     static int contTren = 0;
-    static int colisiones[][] = new int[100][2];
-    static int contChoques = 0;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-
-//        while (sc.hasNext()) {
-        contTren = 0;
-        Casilla[][] tablero = new Casilla[30][30];
-        generarTablero(tablero);
-        int n = sc.nextInt();
-        String aux = sc.nextLine(); // Elimina el /n sobrante
-        if (!(n >= 1 && n <= 10)) {
-            error();
+        while (sc.hasNext()) {
+            contTren = 0;
+            Casilla[][] tablero = new Casilla[30][30];
+            generarTablero(tablero);
+            int n = sc.nextInt();
+            String aux = sc.nextLine(); // Elimina el /n sobrante
+            if (!(n >= 1 && n <= 10)) {
+                error();
+            }
+            Trenes[] trenes = new Trenes[50];
+            String[] datosTrenes = extraeDatosTrenes(n, sc);
+            crearTrenes(datosTrenes, tablero, trenes);
+            ordenarTrenes(trenes);
+            simulacion(tablero, trenes);
+            imprimirTablero(tablero, trenes);
+            System.out.print("\n");
         }
-        Trenes[] trenes = new Trenes[50];
-        String[] datosTrenes = extraeDatosTrenes(n, sc);
-        crearTrenes(datosTrenes, tablero, trenes);
-        ordenarTrenes(trenes);
-        simulacion(tablero, trenes);
-//        imprimirTablero(tablero, trenes);
-
-//        }
         sc.close();
     }
 
     public static void simulacion(Casilla[][] tablero, Trenes[] trenes) {
-        int t = 0;
         while (!comprobarFin(tablero)) {
-//        while (t < 30) {
             for (int k = 0; k < contTren; k++) {
-                System.out.println("Comprobando la pos " + k + " del array de trenes");
+                //Recorro cada uno de las posiciones del array de trenes previamente ordenado de menor a mayor
                 if (!trenes[k].tipo.equals("-1")) {
                     switch (trenes[k].tipo) {
                         case "0":
                             for (int i = 1; i < trenes[k].tam - 1; i++) {
-                                if (tablero[trenes[k].vagones[i][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) {
-                                    System.out.println("He ecnontrado una x en el medio de tren 1");
-//                                    System.out.println("Añadiendo un punto a las coord i: "+trenes[k].vagones[0][1]+" j : "+trenes[k].vagones[0][0]);
+                                //En este bucle compruebo que no le hayan chocado en la iteracion anterior
+                                if (tablero[trenes[k].vagones[i][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {
                                     int j, cont = 1;
-//                                    System.out.println("Antes de settear el punto :");
-                                    System.out.println("Tren grande viejo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    System.out.println("ME ACABA DE TOCAR POL MEDIO en i: " + trenes[k].vagones[0][1] + " j : " + trenes[k].vagones[i][0]);
-                                    System.out.println("Creando un tren de tamaño " + (i) + " con tipo " + trenes[k].getTipo());
-                                    System.out.println("Cont tren es :" + contTren);
-                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo(), contTren);
-                                    trenes[contTren].setId(contTren);
 
-                                    for (j = 0; j < i; j++) {//Copio los valores que hay antes de la x al nuevo tren
-                                        System.out.println("Copiando valor i " + trenes[k].vagones[j + 1][0] + " j : " + trenes[k].vagones[j][1]);
+                                    tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
+                                    //Actualizo el ultimo vagon del tren
+
+                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo());
+                                    //Creo un nuevo tren que se quedara en el choque
+
+                                    for (j = 0; j < i; j++) {
+                                        //Copio los valores que hay antes de la x al nuevo tren
                                         trenes[contTren].vagones[j][0] = trenes[k].vagones[j][0];
                                         trenes[contTren].vagones[j][1] = trenes[k].vagones[j][1];
                                         cont++;
                                     }
-                                    for (int u = 0; u < cont; u++) {//Avanzo a lo largo del tren antiguo para reducir su tamaño y conservar las casillas
+                                    for (int u = 0; u < cont; u++) {
+                                        //Avanzo a lo largo del tren antiguo para reducir su tamaño y conservar las casillas
                                         for (int h = 0; h < trenes[k].tam; h++) {
                                             trenes[k].vagones[h][1]--;
                                         }
                                     }
-                                    System.out.println("Modifico el tamaño del tren grande de : " + trenes[k].tam + " a : " + (trenes[k].tam - i - 1));
-                                    trenes[k].tam = trenes[k].tam - i - 1;
 
-
-                                    System.out.println("Tren pequeño nuevo");
-                                    for (j = 0; j < trenes[contTren].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    System.out.println("Tren grande nuevo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    contTren++;
+                                    trenes[k].tam = trenes[k].tam - i - 1; //Actualizo el tamaño del nuevo tren grande
+                                    contTren++; //Aumento el numero de trenes totales
                                     break;
                                 }
                             }
-//                            System.out.println("Entro en 0 y mi id es :" + trenes[k].getId());
-                            if (trenes[k].vagones[trenes[k].tam - 1][1] == 0) { //Caso de llegada al borde del tablero
+                            if (trenes[k].vagones[trenes[k].tam - 1][1] == 0 || trenes[k].tam == 1) {
+                                //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
                                 tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                 if (trenes[k].tam > 1) {
                                     for (int i = 0; i < trenes[k].tam; i++) {
@@ -103,26 +73,28 @@ public class MainTrenes {
                                     }
                                 }
                                 trenes[k].tam--;
-                                if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
+                                if (trenes[k].tam == 0) //Si el tamaño es 0 lo sacamos de la lista para seguir moviendo
                                     trenes[k].setTipo("-1");
-                            } else { //Caso de cualquier movimiento
-                                if (tablero[trenes[k].vagones[trenes[k].tam - 1][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                            } else {
+                                //Caso de cualquier movimiento fuera del borde
+                                if (tablero[trenes[k].vagones[trenes[k].tam - 1][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {
+                                    // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) {//Comprobamos si hay colision en la cola del tren
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {
+                                    //Comprobamos si hay colision en la cola del tren
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][1]--;
                                     trenes[k].tam--;
                                 }
                                 if ((tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) - 1][trenes[k].vagones[0][0]]).getEstado().equals(".")) {
-                                    //System.out.println("posicion a buscar : i " + ((trenes[k].vagones[(trenes[k].tam)-1][1])-1) + " j :" + trenes[k].vagones[0][0] + "     " + (tablero[(trenes[k].vagones[(trenes[k].tam-1)][1])-1][trenes[k].vagones[0][0]]).getEstado());
-
-                                    //System.out.println("i: " + trenes[k].vagones[0][0] + " j : " + trenes[k].vagones[0][1]);
+                                    //Si la siguiente posicion esta libre
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][1]--;
-                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) - 1][trenes[k].vagones[0][0]].getEstado().equals("x")) {
+                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) - 1][trenes[k].vagones[0][0]].getEstado().equals("X")) {
+                                    //Si la siguiente posicion es un choque existente
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++) {
                                         trenes[k].vagones[i][1]--;
@@ -131,84 +103,51 @@ public class MainTrenes {
                                     if (trenes[k].tam == 0) {
                                         trenes[k].setTipo("-1");
                                     }
-                                } else { //Caso de choque
+                                } else {
+                                    //Si la siguiente posicion sera un choque nuevo
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    tablero[((trenes[k].vagones[(trenes[k].tam) - 1][1]) - 1)][trenes[k].vagones[0][0]].setEstado("x");
+                                    tablero[((trenes[k].vagones[(trenes[k].tam) - 1][1]) - 1)][trenes[k].vagones[0][0]].setEstado("X");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
                                             trenes[k].vagones[i][1]--;
                                     }
                                     trenes[k].tam--;
-                                    if (trenes[k].tam == 0) { //Hacemos que el tren deje de usarse como valido.
+                                    if (trenes[k].tam == 0)  //Hacemos que el tren deje de usarse como valido.
                                         trenes[k].setTipo("-1");
-                                    }
                                 }
                             }
-//                            System.out.printf("Tren %d tamaño: %d\n",trenes[k].getId(),trenes[k].tam);
-//                            for (int j = 0; j < trenes[k].tam; j++) {
-//                                for (int h = 0; h < 2; h++) {
-//                                    System.out.printf("[%d]", trenes[k].vagones[j][h]);
-//                                }
-//                                System.out.print("\n");
-//                            }
-                            actualizarTablero(tablero, trenes);
                             break;
                         case "1":
                             for (int i = 1; i < trenes[k].tam - 1; i++) {
-                                if (tablero[trenes[k].vagones[i][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) {
-                                    System.out.println("He ecnontrado una x en el medio de tren 1");
-//                                    System.out.println("Añadiendo un punto a las coord i: "+trenes[k].vagones[0][1]+" j : "+trenes[k].vagones[0][0]);
+                                //En este bucle compruebo que no le hayan chocado en la iteracion anterior
+                                if (tablero[trenes[k].vagones[i][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {
                                     int j, cont = 1;
-//                                    System.out.println("Antes de settear el punto :");
-                                    System.out.println("Tren grande viejo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
+
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    System.out.println("ME ACABA DE TOCAR POL MEDIO en i: " + trenes[k].vagones[0][1] + " j : " + trenes[k].vagones[i][0]);
-                                    System.out.println("Creando un tren de tamaño " + (i) + " con tipo " + trenes[k].getTipo());
-                                    System.out.println("Cont tren es :" + contTren);
-                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo(), contTren);
-                                    trenes[contTren].setId(contTren);
+                                    //Actualizo el ultimo vagon del tren
+
+                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo());
+                                    //Creo un nuevo tren que se quedara en el choque
 
                                     for (j = 0; j < i; j++) {
-                                        System.out.println("Copiando valor i " + trenes[k].vagones[j + 1][0] + " j : " + trenes[k].vagones[j][1]);
+                                        //Copio los valores que hay antes de la x al nuevo tren
                                         trenes[contTren].vagones[j][0] = trenes[k].vagones[j][0];
                                         trenes[contTren].vagones[j][1] = trenes[k].vagones[j][1];
                                         cont++;
                                     }
                                     for (int u = 0; u < cont; u++) {
+                                        //Avanzo a lo largo del tren antiguo para reducir su tamaño y conservar las casillas
                                         for (int h = 0; h < trenes[k].tam; h++) {
                                             trenes[k].vagones[h][1]++;
                                         }
                                     }
-                                    System.out.println("Modifico el tamaño del tren grande de : " + trenes[k].tam + " a : " + (trenes[k].tam - i - 1));
-                                    trenes[k].tam = trenes[k].tam - i - 1;
-
-
-                                    System.out.println("Tren pequeño nuevo");
-                                    for (j = 0; j < trenes[contTren].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    System.out.println("Tren grande nuevo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    contTren++;
+                                    trenes[k].tam = trenes[k].tam - i - 1; //Actualizo el tamaño del nuevo tren grande
+                                    contTren++; //Aumento el numero de trenes totales
                                     break;
                                 }
                             }
-//                            System.out.println("Entro en 1 y mi id es :" + trenes[k].getId());
-                            if (trenes[k].vagones[trenes[k].tam - 1][1] == 29) { //Caso de llegada al borde del tablero
+                            if (trenes[k].vagones[trenes[k].tam - 1][1] == 29 || trenes[k].tam == 1) {
+                                //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
                                 tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                 if (trenes[k].tam > 1) {
                                     for (int i = 0; i < trenes[k].tam - 1; i++) {
@@ -217,14 +156,17 @@ public class MainTrenes {
                                     }
                                 }
                                 trenes[k].tam--;
-                                if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
+                                if (trenes[k].tam == 0) //Si el tamaño es 0 lo sacamos de la lista para seguir moviendo
                                     trenes[k].setTipo("-1");
-                            } else { //Caso cualquiera de movimiento
-                                if (tablero[trenes[k].vagones[trenes[k].tam - 1][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                            } else {
+                                //Caso de cualquier movimiento fuera del borde
+                                if (tablero[trenes[k].vagones[trenes[k].tam - 1][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                                    // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) {//Comprobamos si hay colision en la cola del tren
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {
+                                    //Comprobamos si hay colision en la cola del tren
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][1]++;
                                     trenes[k].tam--;
@@ -232,13 +174,12 @@ public class MainTrenes {
 
 
                                 if ((tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1][trenes[k].vagones[0][0]]).getEstado().equals(".")) {
-                                    //System.out.println("posicion a buscar : i " + ((trenes[k].vagones[(trenes[k].tam)-1][1])-1) + " j :" + trenes[k].vagones[0][0] + "     " + (tablero[(trenes[k].vagones[(trenes[k].tam-1)][1])-1][trenes[k].vagones[0][0]]).getEstado());
-
-                                    //System.out.println("i: " + trenes[k].vagones[0][0] + " j : " + trenes[k].vagones[0][1]);
+                                    //Si la siguiente posicion esta libre
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][1]++;
-                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1][trenes[k].vagones[0][0]].getEstado().equals("x")) {
+                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1][trenes[k].vagones[0][0]].getEstado().equals("X")) {
+                                    //Si la siguiente posicion es un choque existente
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
@@ -248,107 +189,78 @@ public class MainTrenes {
                                     if (trenes[k].tam == 0) {
                                         trenes[k].setTipo("-1");
                                     }
-                                } else { //Caso de choque
-                                    tablero[((trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1)][trenes[k].vagones[0][0]].setEstado("x");
+                                } else {
+                                    //Si la siguiente posicion sera un choque nuevo
+                                    tablero[((trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1)][trenes[k].vagones[0][0]].setEstado("X");
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
                                             trenes[k].vagones[i][1]++;
                                     }
                                     trenes[k].tam--;
-                                    if (trenes[k].tam == 0) {
+                                    if (trenes[k].tam == 0) //Hacemos que el tren deje de usarse como valido.
                                         trenes[k].setTipo("-1");
-                                    }
                                 }
                             }
-//                            System.out.printf("Tren %d\n", trenes[k].getId());
-//                            for (int j = 0; j < trenes[k].tam; j++) {
-//                                for (int h = 0; h < 2; h++) {
-//                                    System.out.printf("[%d]", trenes[k].vagones[j][h]);
-//                                }
-//                                System.out.print("\n");
-//                            }
-                            actualizarTablero(tablero, trenes);
                             break;
                         case "2":
                             for (int i = 1; i < trenes[k].tam - 1; i++) {
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[i][0]].getEstado().equals("x")) {
-//                                    System.out.println("Añadiendo un punto a las coord i: "+trenes[k].vagones[0][1]+" j : "+trenes[k].vagones[0][0]);
+                                //En este bucle compruebo que no le hayan chocado en la iteracion anterior
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[i][0]].getEstado().equals("X")) {
                                     int j, cont = 1;
-//                                    System.out.println("Antes de settear el punto :");
-                                    System.out.println("Tren grande viejo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
+
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    System.out.println("ME ACABA DE TOCAR POL MEDIO en i: " + trenes[k].vagones[0][1] + " j : " + trenes[k].vagones[i][0]);
-                                    System.out.println("Creando un tren de tamaño " + (i) + " con tipo " + trenes[k].getTipo());
-                                    System.out.println("Cont tren es :" + contTren);
-                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo(), contTren);
-                                    trenes[contTren].setId(contTren);
+                                    //Actualizo el ultimo vagon del tren
+
+                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo());
+                                    //Creo un nuevo tren que se quedara en el choque
 
                                     for (j = 0; j < i; j++) {
-                                        System.out.println("Copiando valor i " + trenes[k].vagones[j + 1][0] + " j : " + trenes[k].vagones[j][1]);
+                                        //Copio los valores que hay antes de la x al nuevo tren
                                         trenes[contTren].vagones[j][0] = trenes[k].vagones[j][0];
                                         trenes[contTren].vagones[j][1] = trenes[k].vagones[j][1];
                                         cont++;
                                     }
                                     for (int u = 0; u < cont; u++) {
+                                        //Avanzo a lo largo del tren antiguo para reducir su tamaño y conservar las casillas
                                         for (int h = 0; h < trenes[k].tam; h++) {
                                             trenes[k].vagones[h][0]--;
                                         }
                                     }
-                                    System.out.println("Modifico el tamaño del tren grande de : " + trenes[k].tam + " a : " + (trenes[k].tam - i - 1));
-                                    trenes[k].tam = trenes[k].tam - i - 1;
-
-
-                                    System.out.println("Tren pequeño nuevo");
-                                    for (j = 0; j < trenes[contTren].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    System.out.println("Tren grande nuevo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    contTren++;
+                                    trenes[k].tam = trenes[k].tam - i - 1; //Actualizo el tamaño del nuevo tren grande
+                                    contTren++; //Aumento el numero de trenes totales
                                     break;
                                 }
                             }
-//                            System.out.println("Entro en 2 y mi id es :" + trenes[k].getId());
-                            if (trenes[k].vagones[trenes[k].tam - 1][0] == 0 || trenes[k].tam==1) { //Caso de llegada al borde del tablero
+                            if (trenes[k].vagones[trenes[k].tam - 1][0] == 0 || trenes[k].tam == 1) {
+                                //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
                                 tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                 if (trenes[k].tam > 1) {
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][0]--;
                                 }
                                 trenes[k].tam--;
-                                if (trenes[k].tam == 0) //El tipo de tren -1 no se tiene en cuenta para la siguiente iteracion(Hemos terminado con ese tren)
+                                if (trenes[k].tam == 0) //Si el tamaño es 0 lo sacamos de la lista para seguir moviendo
                                     trenes[k].setTipo("-1");
-                            } else { //Caso cualquiera de movimiento
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0]].getEstado().equals("x")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                            } else {
+                                //Caso de cualquier movimiento fuera del borde
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0]].getEstado().equals("X")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                                    // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("x")) {//Comprobamos si hay colision en la cola del tren
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {//Comprobamos si hay colision en la cola del tren
+                                    //Comprobamos si hay colision en la cola del tren
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
                                 if ((tablero[trenes[k].vagones[1][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) - 1]).getEstado().equals(".")) {
-                                    //System.out.println("posicion a buscar : i " + ((trenes[k].vagones[(trenes[k].tam)-1][1])-1) + " j :" + trenes[k].vagones[0][0] + "     " + (tablero[(trenes[k].vagones[(trenes[k].tam-1)][1])-1][trenes[k].vagones[0][0]]).getEstado());
-                                    //System.out.println("i: " + trenes[k].vagones[0][0] + " j : " + trenes[k].vagones[0][1]);
+                                    //Si la siguiente posicion esta libre
                                     tablero[trenes[k].vagones[1][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         trenes[k].vagones[i][0]--;
-                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][0]) - 1][trenes[k].vagones[1][1]].getEstado().equals("x")) {
+                                } else if (tablero[(trenes[k].vagones[(trenes[k].tam) - 1][0]) - 1][trenes[k].vagones[1][1]].getEstado().equals("X")) {
+                                    //Si la siguiente posicion es un choque existente
                                     tablero[trenes[k].vagones[0][9]][trenes[k].vagones[1][1]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++) {
                                         trenes[k].vagones[i][1]--;
@@ -358,8 +270,9 @@ public class MainTrenes {
                                         trenes[k].setTipo("-1");
                                     }
                                 } else { //Caso de choque
+                                    //Si la siguiente posicion sera un choque nuevo
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    tablero[trenes[k].vagones[1][1]][((trenes[k].vagones[(trenes[k].tam) - 1][0]) - 1)].setEstado("x");
+                                    tablero[trenes[k].vagones[1][1]][((trenes[k].vagones[(trenes[k].tam) - 1][0]) - 1)].setEstado("X");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
                                             trenes[k].vagones[i][0]--;
@@ -370,101 +283,72 @@ public class MainTrenes {
                                     }
                                 }
                             }
-                            actualizarTablero(tablero, trenes);
                             break;
 
                         case "3":
-//                            System.out.println("Entro en 3 y mi id es :" + trenes[k].getId());
                             for (int i = 1; i < trenes[k].tam - 1; i++) {
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[i][0]].getEstado().equals("x")) {
-//                                    System.out.println("Añadiendo un punto a las coord i: "+trenes[k].vagones[0][1]+" j : "+trenes[k].vagones[0][0]);
+                                //En este bucle compruebo que no le hayan chocado en la iteracion anterior
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[i][0]].getEstado().equals("X")) {
                                     int j, cont = 1;
-//                                    System.out.println("Antes de settear el punto :");
-                                    System.out.println("Tren grande viejo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
+
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
-                                    System.out.println("ME ACABA DE TOCAR POL MEDIO en i: " + trenes[k].vagones[0][1] + " j : " + trenes[k].vagones[i][0]);
-                                    System.out.println("Creando un tren de tamaño " + (i) + " con tipo " + trenes[k].getTipo());
-                                    System.out.println("Cont tren es :" + contTren);
-                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo(), contTren);
-                                    trenes[contTren].setId(contTren);
+                                    //Actualizo el ultimo vagon del tren
+
+                                    trenes[contTren] = new Trenes(i, trenes[k].getTipo());
+                                    //Creo un nuevo tren que se quedara en el choque
 
                                     for (j = 0; j < i; j++) {
-                                        System.out.println("Copiando valor i " + trenes[k].vagones[j + 1][0] + " j : " + trenes[k].vagones[j][1]);
+                                        //Copio los valores que hay antes de la x al nuevo tren
                                         trenes[contTren].vagones[j][0] = trenes[k].vagones[j][0];
                                         trenes[contTren].vagones[j][1] = trenes[k].vagones[j][1];
                                         cont++;
                                     }
                                     for (int u = 0; u < cont; u++) {
+                                        //Avanzo a lo largo del tren antiguo para reducir su tamaño y conservar las casillas
                                         for (int h = 0; h < trenes[k].tam; h++) {
                                             trenes[k].vagones[h][0]++;
                                         }
                                     }
-                                    System.out.println("Modifico el tamaño del tren grande de : " + trenes[k].tam + " a : " + (trenes[k].tam - i - 1));
-                                    trenes[k].tam = trenes[k].tam - i - 1;
-
-
-                                    System.out.println("Tren pequeño nuevo");
-                                    for (j = 0; j < trenes[contTren].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    System.out.println("Tren grande nuevo");
-                                    for (j = 0; j < trenes[k].tam; j++) {
-                                        for (int h = 0; h < 2; h++) {
-                                            System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                        }
-                                        System.out.print("\n");
-                                    }
-                                    contTren++;
+                                    trenes[k].tam = trenes[k].tam - i - 1; //Actualizo el tamaño del nuevo tren grande
+                                    contTren++; //Aumento el numero de trenes totales
                                     break;
                                 }
                             }
-                            System.out.println(trenes[k].vagones[trenes[k].tam - 1][0]);
-                            if (trenes[k].vagones[trenes[k].tam - 1][0] == 29 || trenes[k].tam==1) { //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
-                                System.out.println("Llego al borde derecho");
-                                System.out.println("Poniendo un punto en i : "+trenes[k].vagones[0][1]+" j :"+trenes[k].vagones[0][0]);
+                            if (trenes[k].vagones[trenes[k].tam - 1][0] == 29 || trenes[k].tam == 1) {
+                                //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
                                 tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                 if (trenes[k].tam > 1) {
-                                    System.out.println("Mide : " + trenes[k].tam);
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         if (trenes[k].vagones[i][1] > 0)
                                             trenes[k].vagones[i][0]++;
                                 }
                                 trenes[k].tam--;
-                                System.out.println("Ahora ya Mide : "+trenes[k].tam);
                                 if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
                                     trenes[k].setTipo("-1");
 
 //                                trenes[k].tam--;
                                 if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
                                     trenes[k].setTipo("-1");
-                            } else { //Caso cualquiera de movimiento
-                                System.out.println("Checkeo si la cabeza coincide con   i: " + trenes[k].vagones[trenes[k].tam - 1][0] + " j :" + trenes[k].vagones[0][1]);
-                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0]].getEstado().equals("x")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
-                                    System.out.println("Cabeza de tren coincide con x, eliminando...");
+                            } else {
+                                //Caso de cualquier movimiento fuera del borde
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0]].getEstado().equals("X")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
+                                    // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
-                                System.out.println("Coord de mi mov : i  :" + ((trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1) + " j : " + trenes[k].vagones[0][1]);
-                                System.out.println("Tren derecha: Casilla a la que me muevo: " + tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].getEstado());
-//                                System.out.println("Estado de la pos donde deberia estar la x " + tablero[(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1][trenes[k].vagones[0][1]].getEstado());
+                                if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].getEstado().equals("X")) {//Comprobamos si hay colision en la cola del tren
+                                    //Comprobamos si hay colision en la cola del tren
+                                    tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
+                                    trenes[k].tam--;
+                                }
                                 if ((tablero[trenes[k].vagones[1][1]][trenes[k].vagones[trenes[k].tam - 1][0] + 1].getEstado().equals("."))) {
-                                    //System.out.println("posicion a buscar : i " + ((trenes[k].vagones[(trenes[k].tam)-1][1])-1) + " j :" + trenes[k].vagones[0][0] + "     " + (tablero[(trenes[k].vagones[(trenes[k].tam-1)][1])-1][trenes[k].vagones[0][0]]).getEstado());
-                                    //System.out.println("i: " + trenes[k].vagones[0][0] + " j : " + trenes[k].vagones[0][1]);
+                                    //Si la siguiente posicion esta libre
                                     tablero[trenes[k].vagones[1][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++)
                                         if (trenes[k].vagones[i][1] > 0)
                                             trenes[k].vagones[i][0]++;
-                                } else if (tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].getEstado().equals("x")) {
-                                    System.out.println("Entro a tengo una x despues");
+                                } else if (tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].getEstado().equals("X")) {
+                                    //Si la siguiente posicion es un choque existente
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
@@ -474,38 +358,29 @@ public class MainTrenes {
                                     if (trenes[k].tam == 0) {
                                         trenes[k].setTipo("-1");
                                     }
-                                } else { //Caso de choque
-                                    System.out.println("Ostion111 derechaaaa");
-                                    System.out.println("Tren derecha ha chocado en  i :" + ((trenes[k].vagones[(trenes[k].tam) - 1][1]) + 1) + " j : " + trenes[k].vagones[0][0]);
-                                    tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].setEstado("x");
+                                } else {
+                                    //Si la siguiente posicion sera un choque nuevo
+                                    tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].setEstado("X");
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     if (trenes[k].tam > 1) {
                                         for (int i = 0; i < trenes[k].tam; i++)
                                             trenes[k].vagones[i][0]++;
                                     }
                                     trenes[k].tam--;
-                                    if (trenes[k].tam == 0) {
+                                    if (trenes[k].tam == 0) //Hacemos que el tren deje de usarse como valido.
                                         trenes[k].setTipo("-1");
-                                    }
                                 }
 
                             }
-                            System.out.printf("Tren %d tamaño: %d\n", trenes[k].getId(), trenes[k].tam);
-                            for (int j = 0; j < trenes[k].tam; j++) {
-                                for (int h = 0; h < 2; h++) {
-                                    System.out.printf("[%d]", trenes[k].vagones[j][h]);
-                                }
-                                System.out.print("\n");
-                            }
-//                            ordenarTrenes(trenes);
                             break;
                     }
 
                 }
             }
-            t++;
-            System.out.println(t);
-            imprimirTablero(tablero, trenes);
+            //Ordeno el array de trenes otra vez para que los nuevos trenes se muevan cuando deben
+            ordenarTrenes(trenes);
+            //Actualizo cada iteracion el tablero
+            actualizarTablero(tablero, trenes);
         }
     }
 
@@ -518,9 +393,6 @@ public class MainTrenes {
                     trenes[j] = aux;
                 }
             }
-        }
-        for (int i = 0; i < contTren; i++) {
-            trenes[i].setId(i);
         }
     }
 
@@ -550,8 +422,10 @@ public class MainTrenes {
         int x = Integer.parseInt(val1);
         int y = Integer.parseInt(val2);
         int tam = Integer.parseInt(size);
-
-        trenes[contTren] = new Trenes(tam, tipo, contTren);
+        if (x < 0 || x > 29 || y < 0 || y > 29) {
+            error();
+        }
+        trenes[contTren] = new Trenes(tam, tipo);
 
         if (!tablero[y][x].getEstado().equals(".")) {
             error();
@@ -571,12 +445,6 @@ public class MainTrenes {
                     } else
                         error();
                 }
-//                for (int j = 0; j < tam; j++) {
-//                    for (int h = 0; h < 2; h++) {
-//                        System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-//                    }
-//                    System.out.print("\n");
-//                }
                 break;
             case "1":
                 cont = y - tam + 1;
@@ -588,12 +456,6 @@ public class MainTrenes {
                     trenes[contTren].vagones[i][1] = cont;
                     cont++;
                 }
-//                for (int j = 0; j < tam; j++) {
-//                    for (int h = 0; h < 2; h++) {
-//                        System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-//                    }
-//                    System.out.print("\n");
-//                }
                 break;
             case "2":
                 cont = x + tam - 1;
@@ -605,12 +467,6 @@ public class MainTrenes {
                     trenes[contTren].vagones[i][0] = cont;
                     cont--;
                 }
-//                for (int j = 0; j < tam; j++) {
-//                    for (int h = 0; h < 2; h++) {
-//                        System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-//                    }
-//                    System.out.print("\n");
-//                }
                 break;
             case "3":
                 cont = x - tam + 1;
@@ -622,12 +478,6 @@ public class MainTrenes {
                     trenes[contTren].vagones[i][1] = y;
                     cont++;
                 }
-//                for (int j = 0; j < tam; j++) {
-//                    for (int h = 0; h < 2; h++) {
-//                        System.out.printf("[%d]", trenes[contTren].vagones[j][h]);
-//                    }
-//                    System.out.print("\n");
-//                }
                 break;
         }
         contTren++;
@@ -677,9 +527,8 @@ public class MainTrenes {
     public static void actualizarTablero(Casilla[][] tablero, Trenes[] trenes) {
         for (int k = 0; k < contTren; k++) {
             for (int i = 0; i < trenes[k].tam; i++) {
-//                System.out.println("Tren " + k + " tipo " +trenes[k].getTipo() +" mide " + trenes[k].tam)
                 if (!trenes[k].getTipo().equals("-1"))
-                    if (trenes[k].vagones[i][1] >= 0 && trenes[k].vagones[i][0] >= 0 && !tablero[trenes[k].vagones[i][1]][trenes[k].vagones[i][0]].getEstado().equals("x"))
+                    if (trenes[k].vagones[i][1] >= 0 && trenes[k].vagones[i][0] >= 0 && !tablero[trenes[k].vagones[i][1]][trenes[k].vagones[i][0]].getEstado().equals("X"))
                         tablero[trenes[k].vagones[i][1]][trenes[k].vagones[i][0]].setEstado(trenes[k].getTipo());
             }
         }
@@ -697,7 +546,7 @@ public class MainTrenes {
         for (int i = 0; i < 30; i++) {
             for (int j = 0; j < 30; j++) {
                 if (!tablero[i][j].getEstado().equals(".")) {
-                    if (!tablero[i][j].getEstado().equals("x")) {
+                    if (!tablero[i][j].getEstado().equals("X")) {
                         return false;
                     }
                 }
