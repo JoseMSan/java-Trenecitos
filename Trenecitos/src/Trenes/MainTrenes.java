@@ -715,11 +715,5 @@ public class MainTrenes {
         System.out.println("Conjunto de trenes incorrecto.");
         System.exit(-1);
     }
-}
 
-//for (int j = 0; j < trenes[k].tam; j++) {
-//        for (int h = 0; h < 2; h++) {
-//          System.out.printf("[%d]", trenes[k].vagones[j][h]);
-//        }
-//        System.out.print("\n");
-//        }
+}
