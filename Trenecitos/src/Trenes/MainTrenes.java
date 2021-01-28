@@ -19,6 +19,7 @@ public class MainTrenes {
             Trenes[] trenes = new Trenes[50];
             String[] datosTrenes = extraeDatosTrenes(n, sc);
             crearTrenes(datosTrenes, tablero, trenes);
+            imprimirTablero(tablero, trenes);
             ordenarTrenes(trenes);
             simulacion(tablero, trenes);
             imprimirTablero(tablero, trenes);
@@ -26,9 +27,11 @@ public class MainTrenes {
         }
         sc.close();
     }
-
+    static int t=0;
     public static void simulacion(Casilla[][] tablero, Trenes[] trenes) {
         while (!comprobarFin(tablero)) {
+//            while(t<10){
+//                t++;
             for (int k = 0; k < contTren; k++) {
                 //Recorro cada uno de las posiciones del array de trenes previamente ordenado de menor a mayor
                 if (!trenes[k].tipo.equals("-1")) {
@@ -286,6 +289,7 @@ public class MainTrenes {
                             break;
 
                         case "3":
+                            System.out.println("Caso 3");
                             for (int i = 1; i < trenes[k].tam - 1; i++) {
                                 //En este bucle compruebo que no le hayan chocado en la iteracion anterior
                                 if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[i][0]].getEstado().equals("X")) {
@@ -316,19 +320,13 @@ public class MainTrenes {
                             }
                             if (trenes[k].vagones[trenes[k].tam - 1][0] == 29 || trenes[k].tam == 1) {
                                 //Caso de llegada al borde del tablero o que un trozo sea de tamaño 1
+                                System.out.println("Llego al borde");
                                 tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                 if (trenes[k].tam > 1) {
                                     for (int i = 0; i < trenes[k].tam; i++)
-                                        if (trenes[k].vagones[i][1] > 0)
                                             trenes[k].vagones[i][0]++;
                                 }
                                 trenes[k].tam--;
-                                if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
-                                    trenes[k].setTipo("-1");
-
-//                                trenes[k].tam--;
-                                if (trenes[k].tam == 0) //Comprobacion para que no de fallos cuando el tamaño es 0
-                                    trenes[k].setTipo("-1");
                             } else {
                                 //Caso de cualquier movimiento fuera del borde
                                 if (tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0]].getEstado().equals("X")) { // Si el tren ya ha sido chocado por otro DE FRENTE elimino una posicion
@@ -341,12 +339,11 @@ public class MainTrenes {
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     trenes[k].tam--;
                                 }
-                                if ((tablero[trenes[k].vagones[1][1]][trenes[k].vagones[trenes[k].tam - 1][0] + 1].getEstado().equals("."))) {
+                                if ((tablero[trenes[k].vagones[0][1]][trenes[k].vagones[trenes[k].tam - 1][0] + 1].getEstado().equals("."))) {
                                     //Si la siguiente posicion esta libre
-                                    tablero[trenes[k].vagones[1][1]][trenes[k].vagones[0][0]].setEstado(".");
+                                    tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
                                     for (int i = 0; i < trenes[k].tam; i++)
-                                        if (trenes[k].vagones[i][1] > 0)
-                                            trenes[k].vagones[i][0]++;
+                                        trenes[k].vagones[i][0]++;
                                 } else if (tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].getEstado().equals("X")) {
                                     //Si la siguiente posicion es un choque existente
                                     tablero[trenes[k].vagones[0][1]][trenes[k].vagones[0][0]].setEstado(".");
@@ -355,9 +352,7 @@ public class MainTrenes {
                                             trenes[k].vagones[i][0]++;
                                     }
                                     trenes[k].tam--;
-                                    if (trenes[k].tam == 0) {
-                                        trenes[k].setTipo("-1");
-                                    }
+
                                 } else {
                                     //Si la siguiente posicion sera un choque nuevo
                                     tablero[trenes[k].vagones[0][1]][(trenes[k].vagones[(trenes[k].tam) - 1][0]) + 1].setEstado("X");
@@ -367,10 +362,11 @@ public class MainTrenes {
                                             trenes[k].vagones[i][0]++;
                                     }
                                     trenes[k].tam--;
-                                    if (trenes[k].tam == 0) //Hacemos que el tren deje de usarse como valido.
-                                        trenes[k].setTipo("-1");
                                 }
 
+                            }
+                            if (trenes[k].tam == 0) {
+                                trenes[k].setTipo("-1");
                             }
                             break;
                     }
@@ -379,6 +375,7 @@ public class MainTrenes {
             }
             //Ordeno el array de trenes otra vez para que los nuevos trenes se muevan cuando deben
             ordenarTrenes(trenes);
+            imprimirTablero(tablero,trenes);
             //Actualizo cada iteracion el tablero
             actualizarTablero(tablero, trenes);
         }
@@ -452,9 +449,12 @@ public class MainTrenes {
                     error();
                 }
                 for (i = 0; i < tam; i++) {
-                    trenes[contTren].vagones[i][0] = x;
-                    trenes[contTren].vagones[i][1] = cont;
-                    cont++;
+                    if (comprobarCasilla(tablero, cont, x)) {
+                        trenes[contTren].vagones[i][0] = x;
+                        trenes[contTren].vagones[i][1] = cont;
+                        cont++;
+                    } else
+                        error();
                 }
                 break;
             case "2":
@@ -463,9 +463,12 @@ public class MainTrenes {
                     error();
                 }
                 for (i = 0; i < tam; i++) {
-                    trenes[contTren].vagones[i][1] = y;
-                    trenes[contTren].vagones[i][0] = cont;
-                    cont--;
+                    if (comprobarCasilla(tablero, cont, x)) {
+                        trenes[contTren].vagones[i][1] = y;
+                        trenes[contTren].vagones[i][0] = cont;
+                          cont--;
+                    } else
+                        error();
                 }
                 break;
             case "3":
@@ -474,9 +477,12 @@ public class MainTrenes {
                     error();
                 }
                 for (i = 0; i < tam; i++) {
-                    trenes[contTren].vagones[i][0] = cont;
-                    trenes[contTren].vagones[i][1] = y;
-                    cont++;
+                    if (comprobarCasilla(tablero, cont, x)) {
+                        trenes[contTren].vagones[i][0] = cont;
+                        trenes[contTren].vagones[i][1] = y;
+                        cont++;
+                    } else
+                        error();
                 }
                 break;
         }
