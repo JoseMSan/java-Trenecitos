@@ -126,3 +126,22 @@ Salida de muestra
 02 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 01 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 00 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+
+
+
+
+
+
+
+
+
+
+
+2º CONVOCATORIA
+La entrega de la Práctica I para la segunda convocatoria seguirá las especificaciones de la primera convocatoria salvo en lo que se indica a continuación:
+- No habrá límite de trenes.
+- Los trenes podrán colocarse encima de otros trenes provocando colisiones en todas aquellas unidades que colisionen. Los trenes se colocarán en el tablero en el orden en el que se introducen por la entrada estándar.
+- El tablero podrá ser rectangular y podrá tener como máximo 100 filas o 100 columnas. La entrada por tanto cambiará:
+La primera línea será el tamaño del tablero dado por dos números separados por un blanco. El primer número será el número de filas del tablero y el segundo el número de columnas.
+La segunda línea será el número de trenes de la simulación.
